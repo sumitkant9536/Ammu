@@ -13,7 +13,7 @@ handler.before = async function (m) {
     let room = Object.values(this.game).find(room => room.id && room.game && room.state && room.id.startsWith('tictactoe') && [room.game.playerX, room.game.playerO].includes(m.sender) && room.state == 'PLAYING')
     if (room) {
         // m.reply(`[DEBUG]\n${parseInt(m.text)}`)
-        if (!/^([1-9]|(me)?give up|surrender)$/i.test(m.text)) return !0
+        if (!/^([1-9]|(me)?nyerah|surr?ender)$/i.test(m.text)) return !0
         isSurrender = !/^[1-9]$/.test(m.text)
         if (m.sender !== room.game.currentTurn) { // nek wayahku
             if (!isSurrender) return !0
@@ -24,10 +24,10 @@ handler.before = async function (m) {
         }))
         if (!isSurrender && 1 > (ok = room.game.turn(m.sender === room.game.playerO, parseInt(m.text) - 1))) {
             m.reply({
-                '-3': 'Game has ended',
+                '-3': 'Game telah berakhir',
                 '-2': 'Invalid',
-                '-1': 'Invalid Position',
-                0: 'Invalid Position',
+                '-1': 'Posisi Invalid',
+                0: 'Posisi Invalid',
             }[ok])
             return !0
         }
@@ -57,22 +57,22 @@ handler.before = async function (m) {
 ${arr.slice(0, 3).join('')}
 ${arr.slice(3, 6).join('')}
 ${arr.slice(6).join('')}
-${isWin ? `@${winner.split`@`[0]} Win! (+${winScore} XP)` : isTie ? `Game over (+${playScore} XP)` : `Turn ${['❌', '⭕'][1 * room.game._currentTurn]} (@${room.game.currentTurn.split`@`[0]})`}
+${isWin ? `@${winner.split`@`[0]} Menang! (+${winScore} XP)` : isTie ? `Game berakhir (+${playScore} XP)` : `Giliran ${['❌', '⭕'][1 * room.game._currentTurn]} (@${room.game.currentTurn.split`@`[0]})`}
 
 ❌: @${room.game.playerX.split`@`[0]}
 ⭕: @${room.game.playerO.split`@`[0]}
-When *gives up* to give up
+Type *nyerah* untuk nyerah
 Room ID: ${room.id}
 `.trim()
         let users = global.db.data.users
         if ((room.game._currentTurn ^ isSurrender ? room.x : room.o) !== m.chat)
             room[room.game._currentTurn ^ isSurrender ? 'x' : 'o'] = m.chat
-        if (room.x !== room.o) await conn.sendButton(room.x, str, watermark, 'Giveup', 'giveup', m, {
+        if (room.x !== room.o) await conn.sendButton(room.x, str, 'ɴᴀɴᴅʜᴜᴛᴛʏ ᴠ3', 'Nyerah', 'nyerah', m, {
             contextInfo: {
                 mentionedJid: this.parseMention(str)
             }
         })
-        await conn.sendButton(room.o, str, watermark, 'Giveup', 'giveup',' m', {
+        await conn.sendButton(room.o, str, 'ɴᴀɴᴅʜᴜᴛᴛʏ ᴠ3', 'Nyerah', 'nyerah', m, {
             contextInfo: {
                 mentionedJid: this.parseMention(str)
             }

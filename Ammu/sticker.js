@@ -1,58 +1,40 @@
-const { sticker, webpToMp4, addExif, bot } = require('../lib/index')
-const fm = true
-
-bot(
-  { pattern: 'sticker', fromMe: fm, desc: '', type: 'sticker' },
-  async (message, match) => {
-    if (
-      !message.reply_message ||
-      (!message.reply_message.video && !message.reply_message.image)
-    )
-      return await message.sendMessage('*Reply to image/video*')
-    return await message.sendMessage(
-      await sticker('str',
-        await message.reply_message.downloadAndSaveMediaMessage('sticker'),
-        message.reply_message.image
-          ? 1
-          : message.reply_message.seconds < 10
-            ? 2
-            : 3
-      ),
-      { isAnimated: !!message.reply_message.video },
-      'sticker'
-    )
+const { MessageType } = require('@adiwajshing/baileys')
+const { sticker } = require('../lib/sticker')
+let handler = async (m, { conn, args, usedPrefix, command }) => {
+  let stiker = false
+  try {
+    let q = m.quoted ? m.quoted : m
+    let mime = (q.msg || q).mimetype || ''
+    if (/image/.test(mime)) {
+      let img = await q.download()
+      if (!img) throw `reply to image with caption *${usedPrefix + command}*`
+      stiker = await sticker(img, false, global.packname, global.author)
+    } else if (/video/.test(mime)) {
+      if ((q.msg || q).seconds > 11) return m.reply('10 seconds max!')
+      let img = await q.download()
+      if (!img) throw `reply video/gif with caption *${usedPrefix + command}*`
+      stiker = await sticker(img, false, global.packname, global.author)
+    } else if (/webp/.test(mime)) {
+      let img = await q.download()
+      if (!img) throw `reply sticker with caption *${usedPrefix + command}*`
+      stiker = await sticker(img, false, global.packname, global.author)
+    } else if (args[0]) {
+      if (isUrl(args[0])) stiker = await sticker(false, args[0], global.packname, global.author)
+      else return m.reply('Invalid URL!')
+    }
+  } finally {
+    if (stiker) conn.sendMessage(m.chat, stiker, MessageType.sticker, {
+      quoted: m
+    })
+    else throw 'Error, try to reply to the photo/make sure the mime is correct'
   }
-)
+}
+handler.help = ['sticker (caption|reply media)', 'sticker <url>', 'stickergif (caption|reply media)', 'stickergif <url>']
+handler.tags = ['sticker']
+handler.command = /^s(tic?ker)?(gif)?(wm)?$/i
 
-bot(
-  { pattern: 'take ?(.*)', fromMe: true, desc: '', type: 'sticker' },
-  async (message, match) => {
-    if (!message.reply_message.sticker || !message.reply_message)
-      return await message.sendMessage('*Reply to sticker*')
-    return await message.sendMessage(
-      await addExif(
-        await message.reply_message.downloadMediaMessage('mp4'),
-        match
-      ),
-      {},
-      'sticker'
-    )
-  }
-)
+module.exports = handler
 
-bot(
-  { pattern: 'mp4', fromMe: fm, desc: '', type: 'sticker' },
-  async (message, match) => {
-    if (
-      !message.reply_message.sticker ||
-      !message.reply_message ||
-      !message.reply_message.animated
-    )
-      return await message.sendMessage('*Reply to animated sticker*')
-    return await message.sendFromUrl(
-      await webpToMp4(
-        await message.reply_message.downloadAndSaveMediaMessage('sticker')
-      )
-    )
-  }
-)
+const isUrl = (text) => {
+  return text.match(new RegExp(/https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&/=]*)(jpe?g|gif|png)/, 'gi'))
+}

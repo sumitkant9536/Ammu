@@ -1,3 +1,4 @@
+const fetch = require('node-fetch')
 let { webp2png } = require('../lib/webp2mp4')
 
 let handler = async (m, { conn, usedPrefix, command }) => {
@@ -27,7 +28,7 @@ let handler = async (m, { conn, usedPrefix, command }) => {
      • 𝗗𝗮𝘁𝗮 𝗡𝗲𝘁𝘄𝗼𝗿𝗸 𝗜𝘀𝘀𝘂𝗲𝘀 `, null, {})
 }}
 handler.help = ['ᴘʜᴏᴛᴏ']
-handler.tags = ['tools']
+handler.tags = ['sticker']
 handler.command = /^(photo|toimg)$/i
 
 module.exports = handler

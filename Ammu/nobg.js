@@ -1,32 +1,21 @@
-// Requires "axios" and "form-data" to be installed (see https://www.npmjs.com/package/axios and https://www.npmjs.com/package/form-data)
-const axios = require('axios');
-const FormData = require('form-data');
-const fs = require('fs');
-const path = require('path');
+const axios = require("axios");
 
-const inputPath = '/path/to/file.jpg';
-const formData = new FormData();
-formData.append('size', 'auto');
-formData.append('image_file', fs.createReadStream(inputPath), path.basename(inputPath));
-
-axios({
-  method: 'post',
-  url: 'https://api.remove.bg/v1.0/removebg',
-  data: formData,
-  responseType: 'arraybuffer',
-  headers: {
-    ...formData.getHeaders(),
-    'X-Api-Key': 'q3wc1mvJL4bCHCjSwbZDvJ21',
-  },
-  encoding: null
-})
-.then((response) => {
-  if(response.status != 200) return console.error('Error:', response.status, response.statusText);
-  fs.writeFileSync("no-bg.png", response.data);
-})
-.catch((error) => {
-    return console.error('Request failed:', error);
-});
+let handler = async (m, { conn, usedPrefix, command }) => {
+  let q = m.quoted ? m.quoted : m;
+  let mime = (q.msg || q).mimetype || "";
+  if (/image/.test(mime)) {
+    let img = await q.download();
+    let imgbase64 = img.toString("base64");
+    let data = await axios.post(
+      "https://salisganteng.pythonanywhere.com/api/remove-bg",
+      {
+        "api-key": "salisheker",
+        image: imgbase64,
+      }
+    );
+    await conn.sendFile(m.chat, data.data.image, "", "ᵏᵒⁿᵗᵒˡᵒᵈᵒⁿ", m, false);
+  } else throw `balas foto dengan perintah ${usedPrefix + command}`;
+};
 handler.help = ["removebg", "nobg"];
 handler.tags = ["tools"];
 handler.command = /^(nobg|removebg)$/i;

@@ -1,4 +1,5 @@
 //made by Anshul
+const fetch = require('node-fetch')
 const uploadImage = require('../lib/uploadImage')
 const { sticker } = require('../lib/sticker')
 const { MessageType } = require('@adiwajshing/baileys')

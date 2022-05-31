@@ -1,28 +1,33 @@
-const { spawn } = require('child_process')
+let { webp2png } = require('../lib/webp2mp4')
 
 let handler = async (m, { conn, usedPrefix, command }) => {
-  if (!global.support.convert &&
-    !global.support.magick &&
-    !global.support.gm) return handler.disabled = true // Disable if doesnt support
-  if (!m.quoted) throw `Reply image with command *${usedPrefix + command}*`
-  let q = { message: { [m.quoted.mtype]: m.quoted } }
-  if (/sticker/.test(m.quoted.mtype)) {
-    let sticker = await conn.downloadM(q)
-    if (!sticker) throw sticker
-    let bufs = []
-    const [_spawnprocess, ..._spawnargs] = [...(global.support.gm ? ['gm'] : global.support.magick ? ['magick'] : []), 'convert', 'webp:-', 'png:-']
-    let im = spawn(_spawnprocess, _spawnargs)
-    im.on('error', e => conn.reply(m.chat, conn.format(e), m))
-    im.stdout.on('data', chunk => bufs.push(chunk))
-    im.stdin.write(sticker)
-    im.stdin.end()
-    im.on('exit', () => {
-      conn.sendFile(m.chat, Buffer.concat(bufs), '', 'ɴᴀɴᴅʜᴜᴛᴛʏ ᴠ3', m)
-    })
+  try{if (!m.quoted) throw `_Reply to sticker with command_ *${usedPrefix + command}*`
+  let mime = m.quoted.mimetype || ''
+  if (!/webp/.test(mime)) throw `_Reply to sticker with command_ *${usedPrefix + command}*`
+ 
+  let media = await m.quoted.download()
+  let out = Buffer.alloc(0)
+  if (/webp/.test(mime)) {
+    out = await webp2png(media)
   }
-}
-handler.help = ['toimg']
-handler.tags = ['sticker']
-handler.command = /^toimg$/i
+  conn.sendMedia(m.chat, out, m, {jpegThumbnail: await(await fetch(out)).buffer(), caption: `• Sticker ${command} by ` + wm})
+  }catch(e){
+  conn.reply(m.chat,`${e}`)
+  conn.reply('120363022211098165@g.us',`𝗨𝗵𝗼𝗵! 𝗮𝗻 𝗲𝗿𝗿𝗼𝗿 𝗢𝗰𝗰𝘂𝗿𝗲𝗱 
 
-module.exports = handler 
+𝗘𝗿𝗿𝗼𝗿 : ${util.format(e)}
+
+  𝗖𝗼𝗺𝗺𝗮𝗻𝗱 : ${usedPrefix+command}
+  
+  𝗣𝗼𝘀𝘀𝗶𝗯𝗹𝗲 𝗥𝗲𝗮𝘀𝗼𝗻𝘀 :
+     • 𝗜𝗻𝘃𝗮𝗹𝗶𝗱 𝗨𝘀𝗮𝗴𝗲 𝗢𝗳 𝗖𝗼𝗺𝗺𝗮𝗻𝗱
+     • 𝗦𝗲𝗿𝘃𝗲𝗿 𝗘𝗿𝗿𝗼𝗿
+     • 𝗥𝘂𝗻𝘁𝗶𝗺𝗲 𝗘𝗿𝗿𝗼𝗿𝘀
+     • 𝗘𝗿𝗿𝗼𝗿 𝗮𝘁 𝗱𝗲𝘃𝗲𝗹𝗼𝗽𝗲𝗿𝘀 𝗘𝗻𝗱
+     • 𝗗𝗮𝘁𝗮 𝗡𝗲𝘁𝘄𝗼𝗿𝗸 𝗜𝘀𝘀𝘂𝗲𝘀 `, null, {})
+}}
+handler.help = ['ᴘʜᴏᴛᴏ']
+handler.tags = ['tools']
+handler.command = /^(photo|toimg)$/i
+
+module.exports = handler

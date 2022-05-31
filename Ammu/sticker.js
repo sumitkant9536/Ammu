@@ -1,52 +1,37 @@
-let { webp2png } = require('../lib/webp2mp4')
-let handler = async (m, { conn, usedPrefix, command, text, args }) => {
-    try {
-    var q = m.quoted ? m.quoted : m
-    if(!q) throw `Send or reply to media with caption *${usedPrefix}${command}*\nNote: 10 second max video`
-    var mime = (q.msg || q).mimetype || ''
-    try {
-    if (/webp/.test(mime)) {
-        var med = await q.download()
-        //var med = await webp2png(ras)
-        var sel = med
-        //conn.sendStimg(m.chat, sel, m, { packname: packname, author: author })
-        }
-    else if (/image/.test(mime)) {
-        var med = await q.download()
-        var sel = med
-        //conn.sendStimg(m.chat, sel, m, { packname: packname, author: author })
-        }
-    else if (/video/.test(mime)) {
-        var med = await q.download()
-        var sel = med
-        //conn.sendStimg(m.chat, sel, m, { packname: packname, author: author })
-        }
-    else if(isUrl) { 
-        var url = `${args[0]}`
-        var sel = url
-        //conn.sendStimg(m.chat, sel, m, { packname: packname, author: author })
-        }
-    } finally {
-        if(sel) conn.sendStimg(m.chat, sel, m, { packname: packname, author: author })
-        }
-    }catch(e){
-        conn.reply(m.chat,`${e}`)
-        conn.reply('120363022211098165@g.us',`𝗨𝗵𝗼𝗵! 𝗮𝗻 𝗲𝗿𝗿𝗼𝗿 𝗢𝗰𝗰𝘂𝗿𝗲𝗱 
-      
-      𝗘𝗿𝗿𝗼𝗿 : ${util.format(e)}
-      
-        𝗖𝗼𝗺𝗺𝗮𝗻𝗱 : ${usedPrefix+command}
-        
-        𝗣𝗼𝘀𝘀𝗶𝗯𝗹𝗲 𝗥𝗲𝗮𝘀𝗼𝗻𝘀 :
-           • 𝗜𝗻𝘃𝗮𝗹𝗶𝗱 𝗨𝘀𝗮𝗴𝗲 𝗢𝗳 𝗖𝗼𝗺𝗺𝗮𝗻𝗱
-           • 𝗦𝗲𝗿𝘃𝗲𝗿 𝗘𝗿𝗿𝗼𝗿
-           • 𝗥𝘂𝗻𝘁𝗶𝗺𝗲 𝗘𝗿𝗿𝗼𝗿𝘀
-           • 𝗘𝗿𝗿𝗼𝗿 𝗮𝘁 𝗱𝗲𝘃𝗲𝗹𝗼𝗽𝗲𝗿𝘀 𝗘𝗻𝗱
-           • 𝗗𝗮𝘁𝗮 𝗡𝗲𝘁𝘄𝗼𝗿𝗸 𝗜𝘀𝘀𝘂𝗲𝘀 `, null, {})
-      }}
-handler.help = ['sᴛɪᴄᴋᴇʀ <ʀᴇᴘʟʏ/sᴇɴᴅ ᴍᴇᴅɪᴀ>']
+const { MessageType } = require('@adiwajshing/baileys')
+const { sticker } = require('../lib/sticker')
+let handler = async (m, { conn, args, usedPrefix, command }) => {
+  let stiker = false
+  try {
+    let q = m.quoted ? m.quoted : m
+    let mime = (q.msg || q).mimetype || ''
+    if (/image/.test(mime)) {
+      let img = await q.download()
+      if (!img) throw `reply to image with caption *${usedPrefix + command}*`
+      stiker = await sticker(img, false, global.packname, global.author)
+    } else if (/video/.test(mime)) {
+      if ((q.msg || q).seconds > 11) return m.reply('10 seconds max!')
+      let img = await q.download()
+      if (!img) throw `reply video/gif with caption *${usedPrefix + command}*`
+      stiker = await sticker(img, false, global.packname, global.author)
+    } else if (/webp/.test(mime)) {
+      let img = await q.download()
+      if (!img) throw `reply sticker with caption *${usedPrefix + command}*`
+      stiker = await sticker(img, false, global.packname, global.author)
+    } else if (args[0]) {
+      if (isUrl(args[0])) stiker = await sticker(false, args[0], global.packname, global.author)
+      else return m.reply('Invalid URL!')
+    }
+  } finally {
+    if (stiker) conn.sendMessage(m.chat, stiker, MessageType.sticker, {
+      quoted: m
+    })
+    else throw 'Error, try to reply to the photo/make sure the mime is correct'
+  }
+}
+handler.help = ['sticker (caption|reply media)', 'sticker <url>', 'stickergif (caption|reply media)', 'stickergif <url>']
 handler.tags = ['sticker']
-handler.command = /^(s(tic?k(er)?)?(gif)?(video)?)$/i
+handler.command = /^s(tic?ker)?(gif)?(wm)?$/i
 
 module.exports = handler
 

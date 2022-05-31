@@ -2,7 +2,7 @@ let fetch = require('node-fetch')
 
 let handler = async (m, { conn, command, usedPrefix }) => {
   if (/^tod$/i.test(command)) {
-    await conn.send3Button(m.chat, 'Truth or Dare', 'ɴᴀɴᴅʜᴜᴛᴛʏ ᴠ3', 'Truth', `${usedPrefix}truth`, 'Dare', `${usedPrefix}dare`, 'Acak', `${pickRandom([`${usedPrefix}dare`, `${usedPrefix}truth`])}`, m)
+    await conn.send3Button(m.chat, 'Truth or Dare', 'ɴᴀɴᴅʜᴜᴛᴛʏ ᴠ3', 'Truth', `${usedPrefix}truth`, 'Dare', `${usedPrefix}dare`, 'Acak', `${usedPrefix}dare`, `${usedPrefix}truth`, m)
   }
   if (/^truth$/i.test(command)) {
     let res = await fetch(API('amel', '/truth', {}, 'apikey'))

@@ -21,7 +21,7 @@ Silahkan @${m.mentionedJid[0].split`@`[0]}
   let footer = `Type "accept/ok/gas" to start suit\nType "reject/cannot/later" to decline`
   conn.suit[id] = {
     chat: await conn.send2Button(m.chat, caption, footer, 'Accept', 'ok', 'Reject', 'tolak', m, { contextInfo: { mentionedJid: conn.parseMention(caption) } }),
-    id: id,
+    id:m.id,
     p: m.sender,
     p2: m.mentionedJid[0],
     status: 'wait',

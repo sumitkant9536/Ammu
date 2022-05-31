@@ -1,35 +1,41 @@
-const { MessageType } = require('@adiwajshing/baileys')
 const { sticker } = require('../lib/sticker')
+const uploadFile = require('../lib/uploadFile')
+const uploadImage = require('../lib/uploadImage')
+let { webp2png } = require('../lib/webp2mp4')
 let handler = async (m, { conn, args, usedPrefix, command }) => {
   let stiker = false
   try {
     let q = m.quoted ? m.quoted : m
     let mime = (q.msg || q).mimetype || ''
-    if (/image/.test(mime)) {
+    if (/webp|image|video/g.test(mime)) {
+      if (/video/g.test(mime)) if ((q.msg || q).seconds > 11) return m.reply('Maksimal 10 detik!')
       let img = await q.download()
-      if (!img) throw `reply to image with caption *${usedPrefix + command}*`
-      stiker = await sticker(img, false, global.packname, global.author)
-    } else if (/video/.test(mime)) {
-      if ((q.msg || q).seconds > 11) return m.reply('10 seconds max!')
-      let img = await q.download()
-      if (!img) throw `reply video/gif with caption *${usedPrefix + command}*`
-      stiker = await sticker(img, false, global.packname, global.author)
-    } else if (/webp/.test(mime)) {
-      let img = await q.download()
-      if (!img) throw `reply sticker with caption *${usedPrefix + command}*`
-      stiker = await sticker(img, false, global.packname, global.author)
+      if (!img) throw `balas gambar/video/stiker dengan perintah ${usedPrefix + command}`
+      let out
+      try {
+        if (/webp/g.test(mime)) out = await webp2png(img)
+        else if (/image/g.test(mime)) out = await uploadImage(img)
+        else if (/video/g.test(mime)) out = await uploadFile(img)
+        if (typeof out !== 'string') out = await uploadImage(img)
+        stiker = await sticker(false, out, global.packname, global.author)
+      } catch (e) {
+        console.error(e)
+      } finally {
+        if (!stiker) stiker = await sticker(img, false, global.packname, global.author)
+      }
     } else if (args[0]) {
       if (isUrl(args[0])) stiker = await sticker(false, args[0], global.packname, global.author)
-      else return m.reply('Invalid URL!')
+      else return m.reply('URL tidak valid!')
     }
+  } catch (e) {
+    console.error(e)
+    if (!stiker) stiker = e
   } finally {
-    if (stiker) conn.sendMessage(m.chat, stiker, MessageType.sticker, {
-      quoted: m
-    })
-    else throw 'Error, try to reply to the photo/make sure the mime is correct'
+    if (stiker) conn.sendFile(m.chat, stiker, 'sticker.webp', '', m)
+    else throw 'Conversion failed'
   }
 }
-handler.help = ['sticker (caption|reply media)', 'sticker <url>', 'stickergif (caption|reply media)', 'stickergif <url>']
+handler.help = ['stiker (caption|reply media)', 'stiker <url>', 'stikergif (caption|reply media)', 'stikergif <url>']
 handler.tags = ['sticker']
 handler.command = /^s(tic?ker)?(gif)?(wm)?$/i
 

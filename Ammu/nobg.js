@@ -16,7 +16,7 @@ axios({
   responseType: 'arraybuffer',
   headers: {
     ...formData.getHeaders(),
-    'X-Api-Key': 'INSERT_YOUR_API_KEY_HERE',
+    'X-Api-Key': 'q3wc1mvJL4bCHCjSwbZDvJ21',
   },
   encoding: null
 })
@@ -26,6 +26,7 @@ axios({
 })
 .catch((error) => {
     return console.error('Request failed:', error);
+});
 handler.help = ["removebg", "nobg"];
 handler.tags = ["tools"];
 handler.command = /^(nobg|removebg)$/i;

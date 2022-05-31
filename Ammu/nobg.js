@@ -1,21 +1,31 @@
-const axios = require("axios");
+// Requires "axios" and "form-data" to be installed (see https://www.npmjs.com/package/axios and https://www.npmjs.com/package/form-data)
+const axios = require('axios');
+const FormData = require('form-data');
+const fs = require('fs');
+const path = require('path');
 
-let handler = async (m, { conn, usedPrefix, command }) => {
-  let q = m.quoted ? m.quoted : m;
-  let mime = (q.msg || q).mimetype || "";
-  if (/image/.test(mime)) {
-    let img = await q.download();
-    let imgbase64 = img.toString("base64");
-    let data = await axios.post(
-      "https://salisganteng.pythonanywhere.com/api/remove-bg",
-      {
-        "api-key": "salisheker",
-        image: imgbase64,
-      }
-    );
-    await conn.sendFile(m.chat, data.data.image, "", "Ammu", m, false);
-  } else throw `reply photo with command ${usedPrefix + command}`;
-};
+const inputPath = '/path/to/file.jpg';
+const formData = new FormData();
+formData.append('size', 'auto');
+formData.append('image_file', fs.createReadStream(inputPath), path.basename(inputPath));
+
+axios({
+  method: 'post',
+  url: 'https://api.remove.bg/v1.0/removebg',
+  data: formData,
+  responseType: 'arraybuffer',
+  headers: {
+    ...formData.getHeaders(),
+    'X-Api-Key': 'INSERT_YOUR_API_KEY_HERE',
+  },
+  encoding: null
+})
+.then((response) => {
+  if(response.status != 200) return console.error('Error:', response.status, response.statusText);
+  fs.writeFileSync("no-bg.png", response.data);
+})
+.catch((error) => {
+    return console.error('Request failed:', error);
 handler.help = ["removebg", "nobg"];
 handler.tags = ["tools"];
 handler.command = /^(nobg|removebg)$/i;
